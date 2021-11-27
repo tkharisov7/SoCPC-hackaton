@@ -12,17 +12,17 @@ sc = SparkContext("local", "App Name")
 spark = SparkSession.builder.appName("parquetFile").getOrCreate()
 
 df_enriched = spark.read.parquet("data/datasets/agg_usage.parquet")
-print(df_enriched.count())
 
 df_operators = spark.read.option("header", True).csv("data/datasets/parent_operator.csv").withColumnRenamed(
     "parent_operator_code", "parent_operator_code_b")
 df_enriched = df_enriched.join(df_operators.select(["parent_operator_code_b", "group_operator_code"]),
                                ["parent_operator_code_b"], 'full').filter(df_enriched.client_id.isNotNull())
-print(df_enriched.count())
-df_enriched.show()
 
 
 def get_data_traffic(df: DataFrame) -> DataFrame:
+    '''
+        This function is used to get data_traffic DataFrame
+    '''
     df_4g = df.select(
         ["call_type_key", "roaming_type_key", "client_id", "time_key", "network_type", "rounded_data_volume"]).filter(
         (df.call_type_key.isin(["G", "Y", "X"])) & (
@@ -57,8 +57,12 @@ def get_custom_column(df: DataFrame, condition: str, column_to_sum: str, custom_
 
 
 def get_voice_traffic(df: DataFrame) -> DataFrame:
+    '''
+        This function is used to get voice_traffic DataFrame
+    '''
     df_voice_traffic = None
     special_condition = "(call_type_key == 'V') and (call_direction_ind == {}) and (connection_type_key == 3) and (group_operator_code == 'BLN')"
+    # all rows in special format: 1 - condition to filter, 2 - name of all columns, 3 - summation value
     rows = [("call_direction_ind == 1", "num_of_call", "voice_in_cnt"), (
         special_condition.format(1),
         "num_of_call", "voice_onnet_in_cnt"),
@@ -92,6 +96,10 @@ def get_voice_traffic(df: DataFrame) -> DataFrame:
 
 
 def get_client_profile(data_traffic: DataFrame, voice_traffic: DataFrame) -> DataFrame:
+    '''
+        This function is used to get client_profile DataFrame.
+        We merging data_traffic DataFrame and voice_traffic DataFrame and after grouping by month
+    '''
     merged_frame = data_traffic.join(voice_traffic, ['client_id', 'time_key'], 'full')
     merged_frame = merged_frame.withColumn("time_month", SparkFunctions.col("time_key")[0:7])
     df_client_profile = None
