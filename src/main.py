@@ -131,15 +131,8 @@ def punkt2():
         dict_persons = {row['client_id']: row for row in list_rows}
         return dict_persons
 
-    # data_traffic = get_data_traffic(df_enriched)
-    # voice_traffic = get_voice_traffic(df_enriched)
-    # client_profile = get_client_profile(data_traffic, voice_traffic)
-    # data_traffic.write.csv("data/data_traffic.csv")
-    # voice_traffic.write.csv("data/voice_traffic.csv")
-    # client_profile.write.csv("data/client_profile.csv")
     kek = get_useful_info(df_enriched)
     kafka(df_to_dict_by_id(kek))
-    # kek.show()
 
 
 print(punkt2())
