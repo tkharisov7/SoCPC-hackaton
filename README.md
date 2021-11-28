@@ -1,3 +1,22 @@
+# Как использовать продукт? 
+Склонируйте репозиторий 
+```
+$ git clone https://github.com/kostyamyasso2002/SoCPC-hackaton
+```
+Соберите docker образ
+```
+$ docker built -t SoCPC-image SoCPC-hackaton/
+```
+Запустите docker file
+```
+$ docker run --mount src=$(pwd)/data",target="/data/",type=bind --cpus 4 -m 8000M --name SoCPC-image 
+```
+Подождать когда image соберется. Полученные данные будут лежать в docker container по адресу /data
+Чтобы их скопировать можно воспользоваться командой:
+```
+$ docker cp --name SoCPC-image .
+```
+
 Часть 2
 
 2.1) Создание voice_traffic и data_traffic
