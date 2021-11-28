@@ -139,7 +139,6 @@ def punkt2():
     # client_profile.write.csv("data/client_profile.csv")
     kek = get_useful_info(df_enriched)
     kafka(df_to_dict_by_id(kek))
-    # kek.write.parquet("data/eblan.parquet")
     # kek.show()
 
 
