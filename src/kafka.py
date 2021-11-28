@@ -11,6 +11,7 @@ from kafka.admin import NewTopic
 
 
 def get_event(string, event):
+    """gets current event"""
     if string == {}:
         return None
     dic = ast.literal_eval(string)
@@ -21,6 +22,7 @@ def get_event(string, event):
 
 
 def compare_time(left, right):
+    """compares two time string"""
     if left is None:
         return False
     if right is None:
@@ -29,6 +31,7 @@ def compare_time(left, right):
 
 
 def is_another_day(time_web: str, time_mobile: str) -> bool:
+    """checks if days are different"""
     if time_web is None:
         return True
     if time_web < time_mobile:
@@ -49,6 +52,7 @@ def is_another_day(time_web: str, time_mobile: str) -> bool:
 
 
 def from_date_to_mobile_consumers(date: str) -> float:
+    """turns date into time"""
     hours_f = float(date[11:13])
     minutes_f = float(date[14:16])
     mobile_consumers_f = float(date[17:19])
@@ -57,6 +61,7 @@ def from_date_to_mobile_consumers(date: str) -> float:
 
 
 def is_diff_more_than_5(date1: str, date2: str) -> bool:
+    """checks if time differs ar least in five minutes"""
     mobile_consumers1 = from_date_to_mobile_consumers(date1)
     mobile_consumers2 = from_date_to_mobile_consumers(date2)
     if mobile_consumers1 < mobile_consumers2:
@@ -67,6 +72,7 @@ def is_diff_more_than_5(date1: str, date2: str) -> bool:
 
 
 def plus_five_minutes(date: str) -> str:
+    """adds five minutes"""
     prev_minutes = int(date[14:16])
     prev_hours = int(date[11:13])
     prev_minutes += prev_hours * 60 + 5
@@ -79,7 +85,8 @@ def plus_five_minutes(date: str) -> str:
     return date[:11] + str_hours[-2:] + ":" + str_minutes[-2:] + date[16:]
 
 
-def main():
+def kafka(month_data_dict):
+    """read dict and put final topics"""
     try:
         admin = KafkaAdminClient(bootstrap_servers='localhost:9092')
         topic = NewTopic(name='out_cm',
@@ -111,6 +118,7 @@ def main():
     mobile_consumer = {}
     current_day = {}
     while True:
+        #reads new info only if it is necessary
         if read_web_consumer:
             web_consumer = consumer_mobile.poll(1, 1)
             for it in web_consumer.values():
@@ -140,6 +148,9 @@ def main():
                         current = last_five_min_list.pop(0)
                         if current['client_id'] not in my_set:
                             current["eventTime"] = plus_five_minutes(current["eventTime"])
+                            current["data_all_mb"] = month_data_dict[current["id"]]["data_all_mb"]
+                            current["voice_out_sec"] = month_data_dict[current["id"]]["voice_out_sec"]
+                            current["voice_in_sec"] = month_data_dict[current["id"]]["voice_in_sec"]
                             producer.send('out_cm', value=current)
 
                         if len(last_five_min_list) == 0:
@@ -151,6 +162,9 @@ def main():
                     correct_info = {"client_id": current_info["id"],
                                     "eventTime": current_info["eventTime"],
                                     "channel": "push"}
+                    correct_info["data_all_mb"] = month_data_dict[current_info["id"]]["data_all_mb"]
+                    correct_info["voice_out_sec"] = month_data_dict[current_info["id"]]["voice_out_sec"]
+                    correct_info["voice_in_sec"] = month_data_dict[current_info["id"]]["voice_in_sec"]
                     producer.send('out_cm', value=correct_info)
 
                 print(web_consumer)
@@ -162,6 +176,9 @@ def main():
                         if current['client_id'] not in my_set:
                             my_set.add(current['client_id'])
                             current['eventTime'] = ast.literal_eval(current_day)['eventTime']
+                            current["data_all_mb"] = month_data_dict[current["client_id"]]["data_all_mb"]
+                            current["voice_out_sec"] = month_data_dict[current["client_id"]]["voice_out_sec"]
+                            current["voice_in_sec"] = month_data_dict[current["client_id"]]["voice_in_sec"]
                             producer.send('out_cm', value=current)
 
                     my_set = set([])
@@ -174,6 +191,9 @@ def main():
                         current = last_five_min_list.pop(0)
                         if current['client_id'] not in my_set:
                             current['eventTime'] = plus_five_minutes(current['eventTime'])
+                            current["data_all_mb"] = month_data_dict[current["client_id"]]["data_all_mb"]
+                            current["voice_out_sec"] = month_data_dict[current["client_id"]]["voice_out_sec"]
+                            current["voice_in_sec"] = month_data_dict[current["client_id"]]["voice_in_sec"]
                             producer.send('out_cm', value=current)
 
                         if len(last_five_min_list) == 0:
@@ -196,6 +216,9 @@ def main():
                         if current['client_id'] not in my_set:
                             my_set.add(current['client_id'])
                             current['eventTime'] = ast.literal_eval(current_day)['eventTime']
+                            current["data_all_mb"] = month_data_dict[current["client_id"]]["data_all_mb"]
+                            current["voice_out_sec"] = month_data_dict[current["client_id"]]["voice_out_sec"]
+                            current["voice_in_sec"] = month_data_dict[current["client_id"]]["voice_in_sec"]
                             producer.send('out_cm', value=current)
 
                     my_set = set([])
@@ -203,5 +226,3 @@ def main():
                     last_five_min_list = []
 
 
-                    
-main()
