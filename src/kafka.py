@@ -162,10 +162,13 @@ def kafka(month_data_dict):
                     correct_info = {"client_id": current_info["id"],
                                     "eventTime": current_info["eventTime"],
                                     "channel": "push"}
-                    correct_info["data_all_mb"] = month_data_dict[current_info["id"]]["data_all_mb"]
-                    correct_info["voice_out_sec"] = month_data_dict[current_info["id"]]["voice_out_sec"]
-                    correct_info["voice_in_sec"] = month_data_dict[current_info["id"]]["voice_in_sec"]
                     producer.send('out_cm', value=correct_info)
+                    with open('data/out_cm.json', 'w') as file:
+                        correct_info["data_all_mb"] = month_data_dict[current_info["id"]]["data_all_mb"]
+                        correct_info["voice_out_sec"] = month_data_dict[current_info["id"]]["voice_out_sec"]
+                        correct_info["voice_in_sec"] = month_data_dict[current_info["id"]]["voice_in_sec"]
+                        json.dump(str(correct_info), file)
+
 
                 print(web_consumer)
                 read_web_consumer = True
@@ -176,10 +179,12 @@ def kafka(month_data_dict):
                         if current['client_id'] not in my_set:
                             my_set.add(current['client_id'])
                             current['eventTime'] = ast.literal_eval(current_day)['eventTime']
-                            current["data_all_mb"] = month_data_dict[current["client_id"]]["data_all_mb"]
-                            current["voice_out_sec"] = month_data_dict[current["client_id"]]["voice_out_sec"]
-                            current["voice_in_sec"] = month_data_dict[current["client_id"]]["voice_in_sec"]
                             producer.send('out_cm', value=current)
+                            with open('data/out_cm.json', 'w') as file:
+                                current["data_all_mb"] = month_data_dict[current["id"]]["data_all_mb"]
+                                current["voice_out_sec"] = month_data_dict[current["id"]]["voice_out_sec"]
+                                current["voice_in_sec"] = month_data_dict[current["id"]]["voice_in_sec"]
+                                json.dump(str(current), file)
 
                     my_set = set([])
                     web_set = set([])
@@ -191,10 +196,12 @@ def kafka(month_data_dict):
                         current = last_five_min_list.pop(0)
                         if current['client_id'] not in my_set:
                             current['eventTime'] = plus_five_minutes(current['eventTime'])
-                            current["data_all_mb"] = month_data_dict[current["client_id"]]["data_all_mb"]
-                            current["voice_out_sec"] = month_data_dict[current["client_id"]]["voice_out_sec"]
-                            current["voice_in_sec"] = month_data_dict[current["client_id"]]["voice_in_sec"]
                             producer.send('out_cm', value=current)
+                            with open('data/out_cm.json', 'w') as file:
+                                current["data_all_mb"] = month_data_dict[current["id"]]["data_all_mb"]
+                                current["voice_out_sec"] = month_data_dict[current["id"]]["voice_out_sec"]
+                                current["voice_in_sec"] = month_data_dict[current["id"]]["voice_in_sec"]
+                                json.dump(str(current), file)
 
                         if len(last_five_min_list) == 0:
                             break
@@ -216,13 +223,13 @@ def kafka(month_data_dict):
                         if current['client_id'] not in my_set:
                             my_set.add(current['client_id'])
                             current['eventTime'] = ast.literal_eval(current_day)['eventTime']
-                            current["data_all_mb"] = month_data_dict[current["client_id"]]["data_all_mb"]
-                            current["voice_out_sec"] = month_data_dict[current["client_id"]]["voice_out_sec"]
-                            current["voice_in_sec"] = month_data_dict[current["client_id"]]["voice_in_sec"]
                             producer.send('out_cm', value=current)
+                            with open('data/out_cm.json', 'w') as file:
+                                current["data_all_mb"] = month_data_dict[current["id"]]["data_all_mb"]
+                                current["voice_out_sec"] = month_data_dict[current["id"]]["voice_out_sec"]
+                                current["voice_in_sec"] = month_data_dict[current["id"]]["voice_in_sec"]
+                                json.dump(str(current), file)
 
                     my_set = set([])
                     web_set = set([])
                     last_five_min_list = []
-
-
